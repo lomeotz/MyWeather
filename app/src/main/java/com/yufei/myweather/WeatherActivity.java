@@ -232,6 +232,7 @@ public class WeatherActivity extends AppCompatActivity {
 
             minText.setText(forecast.temperature.min);
             forecastLayout.addView(view);
+            //test
         }
         if (weather.aqi != null) {
             aqiText.setText(weather.aqi.city.aqi);
