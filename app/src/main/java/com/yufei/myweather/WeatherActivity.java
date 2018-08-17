@@ -23,6 +23,7 @@ import com.bumptech.glide.Glide;
 import com.yufei.myweather.gson.Forecast;
 import com.yufei.myweather.gson.Weather;
 
+import com.yufei.myweather.service.AutoUpdateService;
 import com.yufei.myweather.util.HttpUtil;
 import com.yufei.myweather.util.Utility;
 
@@ -213,6 +214,12 @@ public class WeatherActivity extends AppCompatActivity {
      * 处理并展示Weather实体类中的数据。
      */
     private void showWeatherInfo(Weather weather) {
+        if (weather != null && "ok".equals(weather.status)) {
+            Intent intent = new Intent(this, AutoUpdateService.class);
+            startService(intent);
+        } else {
+            Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+        }
         String cityName = weather.basic.cityName;
         String updateTime = weather.basic.update.updateTime.split(" ")[1];
         String degree = weather.now.temperature + "℃";
