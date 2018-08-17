@@ -20,6 +20,10 @@ import com.yufei.myweather.db.County;
 import com.yufei.myweather.db.Province;
 import com.yufei.myweather.util.HttpUtil;
 import com.yufei.myweather.util.Utility;
+import com.yufei.myweather.MainActivity;
+import com.yufei.myweather.R;
+import com.yufei.myweather.WeatherActivity;
+import com.yufei.myweather.db.County;
 
 import org.litepal.crud.DataSupport;
 
@@ -31,7 +35,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ChooseAreaFragment extends Fragment {
+public class ChooseAreaFragment extends Fragment {
 
     private static final String TAG = "ChooseAreaFragment";
 
@@ -93,6 +97,7 @@ public class                                                                    
         listView = (ListView) view.findViewById(R.id.list_view);
         adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, dataList);
         listView.setAdapter(adapter);
+
         return view;
     }
 
@@ -108,19 +113,23 @@ public class                                                                    
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = cityList.get(position);
                     queryCounties();
-                }else if (currentLevel == LEVEL_COUNTY) {
+                } else if (currentLevel == LEVEL_COUNTY) {
                     String weatherId = countyList.get(position).getWeatherId();
-
+                    if (getActivity() instanceof MainActivity) {
                         Intent intent = new Intent(getActivity(), WeatherActivity.class);
                         intent.putExtra("weather_id", weatherId);
                         startActivity(intent);
                         getActivity().finish();
+                    } else if (getActivity() instanceof WeatherActivity) {
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        activity.drawerLayout.closeDrawers();
+
+                        activity.swipeRefresh.setRefreshing(true);
+                        activity.requestWeather(weatherId);
                     }
                 }
-
-
+            }
         });
-
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -162,6 +171,7 @@ public class                                                                    
         titleText.setText(selectedProvince.getProvinceName());
         backButton.setVisibility(View.VISIBLE);
         cityList = DataSupport.where("provinceid = ?", String.valueOf(selectedProvince.getId())).find(City.class);
+
         if (cityList.size() > 0) {
             dataList.clear();
             for (City city : cityList) {
@@ -179,6 +189,7 @@ public class                                                                    
 
     /**
      * 查询选中市内所有的县，优先从数据库查询，如果没有查询到再去服务器上查询。
+     *
      */
     private void queryCounties() {
         titleText.setText(selectedCity.getCityName());
